@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:paddingLeft="46mm" android:paddingRight="46mm"
+    android:paddingTop="8mm" android:paddingBottom="10mm"
+    android:clipChildren="true" android:clipToPadding="true">
+    <TextView android:layout_width="match_parent" android:layout_height="44mm"
+        android:text="少儿 · 找到喜欢的节目" android:textSize="30mm"
+        android:textColor="@color/tv_text_primary" android:gravity="center_vertical" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:background="@drawable/channel_filter_panel"
+        android:padding="10mm" android:layout_marginTop="4mm" android:layout_marginBottom="6mm">
+        <LinearLayout android:id="@+id/kidsAgeFilters" android:layout_width="match_parent"
+            android:layout_height="40mm" android:gravity="center_vertical" />
+        <LinearLayout android:id="@+id/kidsTypeFilters" android:layout_width="match_parent"
+            android:layout_height="40mm" android:gravity="center_vertical" />
+    </LinearLayout>
+    <TextView android:id="@+id/kidsSelectionSummary" android:layout_width="match_parent"
+        android:layout_height="34mm" android:textSize="21mm"
+        android:textColor="@color/tv_text_secondary" android:gravity="center_vertical" />
+    <ScrollView android:id="@+id/kidsProgramsScroll" android:layout_width="match_parent"
+        android:layout_height="0mm" android:layout_weight="1"
+        android:clipChildren="true" android:clipToPadding="true"
+        android:padding="5mm" android:fillViewport="false">
+        <GridLayout android:id="@+id/kidsPrograms" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:columnCount="4"
+            android:clipChildren="true" android:clipToPadding="true" />
+    </ScrollView>
+    <TextView android:id="@+id/kidsMore" android:layout_width="match_parent"
+        android:layout_height="40mm" android:layout_marginTop="5mm"
+        android:text="搜索其他少儿节目 →" android:textSize="22mm"
+        android:textColor="@color/tv_text_primary" android:gravity="center"
+        android:focusable="true" android:clickable="true"
+        android:background="@drawable/tv_home_control_focus" />
+    <TextView android:layout_width="match_parent" android:layout_height="28mm"
+        android:text="年龄仅供选片参考 · 点击节目搜索可用片源 · 返回键回首页"
+        android:textSize="18mm" android:textColor="@color/tv_text_secondary"
+        android:gravity="center_vertical" />
+</LinearLayout>

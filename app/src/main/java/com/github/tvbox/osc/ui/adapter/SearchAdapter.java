@@ -19,13 +19,26 @@ import me.jessyan.autosize.utils.AutoSizeUtils;
 public class SearchAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder> {
     private static final int SEARCH_POSTER_WIDTH = 180;
     private static final int SEARCH_POSTER_HEIGHT = 240;
+    private boolean posterPanel;
 
     public SearchAdapter() {
         super(Hawk.get(HawkConfig.SEARCH_VIEW, 0) == 0 ? R.layout.item_search_lite : R.layout.item_search_normal, new ArrayList<>());
     }
 
+    public SearchAdapter(boolean posterPanel) {
+        super(R.layout.item_search_poster, new ArrayList<>());
+        this.posterPanel = posterPanel;
+    }
+
     @Override
     protected void convert(BaseViewHolder helper, Movie.Video item) {
+        if (posterPanel) {
+            helper.setText(R.id.tvName, item.name);
+            com.github.tvbox.osc.bean.SourceBean source = ApiConfig.get().getSource(item.sourceKey);
+            helper.setText(R.id.tvSite, source == null ? "" : source.getName());
+            ImgUtil.loadHomeArtwork(item.pic, helper.getView(R.id.ivThumb), item.name);
+            return;
+        }
         if (Hawk.get(HawkConfig.SEARCH_VIEW, 0) == 0) {
             helper.setText(R.id.tvName, String.format("%s  %s %s %s", ApiConfig.get().getSource(item.sourceKey).getName(), item.name, item.type == null ? "" : item.type, item.note == null ? "" : item.note));
         } else {

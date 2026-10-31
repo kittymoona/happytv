@@ -4,13 +4,13 @@
         <shape>
             <corners android:radius="10mm" />
             <stroke android:width="2mm" android:color="@color/color_FFFFFF" />
-            <solid android:color="@color/color_6C3D3D3D" />
+            <solid android:color="@color/tv_surface_focused" />
         </shape>
     </item>
     <item>
         <shape>
             <corners android:radius="10mm" />
-            <solid android:color="@color/color_6C3D3D3D" />
+            <solid android:color="@color/tv_surface" />
         </shape>
     </item>
 </selector>

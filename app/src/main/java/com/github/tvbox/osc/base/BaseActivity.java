@@ -313,6 +313,6 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         if (globalWp != null)
             getWindow().setBackgroundDrawable(globalWp);
         else
-            getWindow().setBackgroundDrawableResource(R.drawable.app_bg);
+            getWindow().setBackgroundDrawableResource(R.drawable.tv_background);
     }
 }

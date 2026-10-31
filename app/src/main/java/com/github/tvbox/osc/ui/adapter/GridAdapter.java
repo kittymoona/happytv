@@ -98,6 +98,10 @@ public class GridAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder> {
             containerParams.height = AutoSizeUtils.mm2px(mContext, height);
             containerParams.width = AutoSizeUtils.mm2px(mContext, width);
             container.setLayoutParams(containerParams);
+            ViewGroup card = (ViewGroup) container.getParent();
+            ViewGroup.LayoutParams cardParams = card.getLayoutParams();
+            cardParams.width = containerParams.width + card.getPaddingLeft() + card.getPaddingRight();
+            card.setLayoutParams(cardParams);
         }
     }
 }

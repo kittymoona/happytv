@@ -3,10 +3,16 @@
     <item android:state_focused="true">
         <shape>
             <corners android:radius="20mm"/>
-            <solid android:color="@color/color_BD0CADE2"/>
+            <solid android:color="@color/tv_focus"/>
         </shape>
     </item>
-    <item android:state_focused="false">
+    <item android:state_selected="true">
+        <shape>
+            <corners android:radius="20mm"/>
+            <solid android:color="@color/tv_surface"/>
+        </shape>
+    </item>
+    <item>
         <shape>
             <corners android:radius="20mm"/>
             <solid android:color="@android:color/transparent"/>

@@ -17,7 +17,7 @@ public class EpgUtil {
     private static JsonObject epgDoc = null;
     private static HashMap<String, JsonObject> epgHashMap = new HashMap<>();
 
-    public static void init() {
+    public static synchronized void init() {
         if(epgDoc != null)
             return;
         try {
@@ -50,6 +50,7 @@ public class EpgUtil {
     }
 
     public static String[] getEpgInfo(String channelName) {
+        init();
         try {
             if(epgHashMap.containsKey(channelName)){
                 JsonObject obj = epgHashMap.get(channelName);

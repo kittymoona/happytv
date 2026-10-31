@@ -23,6 +23,21 @@
                 android:layout_marginTop="@dimen/vs_10"
                 android:orientation="vertical">
 
+            <LinearLayout android:id="@+id/llHomeLayout"
+                android:layout_width="match_parent" android:layout_height="70mm"
+                android:layout_marginBottom="10mm" android:paddingLeft="20mm" android:paddingRight="20mm"
+                android:gravity="center_vertical" android:orientation="horizontal"
+                android:background="@drawable/shape_setting_model_focus" android:focusable="true">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="首页布局" android:textSize="28mm" android:textColor="@android:color/white" />
+                <TextView android:id="@+id/tvHomeLayout" android:layout_width="0mm"
+                    android:layout_height="wrap_content" android:layout_weight="1" android:gravity="right"
+                    android:textSize="26mm" android:textColor="@android:color/white" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginLeft="16mm" android:text="›" android:textSize="28mm"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
+
             <LinearLayout
                     android:id="@+id/llDebug"
                     android:layout_width="match_parent"
@@ -314,6 +329,21 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <LinearLayout android:id="@+id/searchIncludeCloud"
+                android:layout_width="match_parent" android:layout_height="60mm"
+                android:layout_marginBottom="10mm" android:paddingLeft="20mm"
+                android:paddingRight="20mm" android:gravity="center_vertical"
+                android:background="@drawable/shape_setting_model_focus" android:focusable="true">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="包含网盘结果" android:textSize="24mm" android:textColor="@android:color/white"/>
+                <Space android:layout_width="0mm" android:layout_height="1mm" android:layout_weight="1"/>
+                <TextView android:id="@+id/searchIncludeCloudText"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textSize="24mm" android:textColor="@android:color/white"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginLeft="10mm" android:text="›" android:textSize="30mm"
+                    android:textColor="@android:color/white"/>
+            </LinearLayout>
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/vs_60"

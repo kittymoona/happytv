@@ -1,0 +1,39 @@
+{
+  "class": [
+    {"type_id": "shorts", "type_name": "公开短片"},
+    {"type_id": "news", "type_name": "新闻直播"}
+  ],
+  "list": [
+    {
+      "vod_id": "sintel-trailer",
+      "type_id": "shorts",
+      "vod_name": "Sintel · 官方预告片",
+      "vod_pic": "",
+      "vod_remarks": "Blender · 公开动画预告",
+      "vod_year": "2010",
+      "vod_content": "Blender Foundation 开放电影 Sintel 官方预告片。来源：https://durian.blender.org/，CC BY 3.0。本条目为预告片。",
+      "vod_play_from": "Blender 官方",
+      "vod_play_url": "480p$https://download.blender.org/durian/trailer/sintel_trailer-480p.mp4#720p$https://download.blender.org/durian/trailer/sintel_trailer-720p.mp4#1080p$https://download.blender.org/durian/trailer/sintel_trailer-1080p.mp4"
+    },
+    {
+      "vod_id": "france24-en",
+      "type_id": "news",
+      "vod_name": "France 24 · English",
+      "vod_pic": "",
+      "vod_remarks": "国际新闻 · 直播",
+      "vod_content": "France 24 英语公开新闻直播。来源：IPTV-org 新闻播放列表，播放地址位于 live.france24.com。",
+      "vod_play_from": "公开直播",
+      "vod_play_url": "观看直播$https://live.france24.com/hls/live/2037218-b/F24_EN_HI_HLS/master_5000.m3u8"
+    },
+    {
+      "vod_id": "aljazeera-en",
+      "type_id": "news",
+      "vod_name": "Al Jazeera · English",
+      "vod_pic": "",
+      "vod_remarks": "国际新闻 · 直播",
+      "vod_content": "Al Jazeera 英语公开新闻直播。来源：IPTV-org 新闻播放列表，播放地址位于 getaj.net。",
+      "vod_play_from": "公开直播",
+      "vod_play_url": "观看直播$https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8"
+    }
+  ]
+}

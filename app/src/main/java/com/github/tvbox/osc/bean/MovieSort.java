@@ -74,7 +74,7 @@ public class MovieSort implements Serializable {
         }
     }
 
-    public static class SortFilter {
+    public static class SortFilter implements Serializable {
         public String key;
         public String name;
         public LinkedHashMap<String, String> values;

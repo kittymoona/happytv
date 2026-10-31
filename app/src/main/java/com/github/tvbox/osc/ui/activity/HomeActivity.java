@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.animation.BounceInterpolator;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,9 +42,13 @@ import com.github.tvbox.osc.server.ControlManager;
 import com.github.tvbox.osc.ui.adapter.HomePageAdapter;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.adapter.SortAdapter;
+import com.github.tvbox.osc.ui.tv.TvFocusAnimator;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
 import com.github.tvbox.osc.ui.dialog.TipDialog;
 import com.github.tvbox.osc.ui.fragment.GridFragment;
+import com.github.tvbox.osc.ui.fragment.KidsFragment;
+import com.github.tvbox.osc.ui.fragment.ChannelFragment;
+import com.github.tvbox.osc.ui.tv.HomeChannels;
 import com.github.tvbox.osc.ui.fragment.UserFragment;
 import com.github.tvbox.osc.ui.tv.widget.DefaultTransformer;
 import com.github.tvbox.osc.ui.tv.widget.FixedSpeedScroller;
@@ -92,6 +95,7 @@ public class HomeActivity extends BaseActivity {
     private HomePageAdapter pageAdapter;
     private View currentView;
     private final List<BaseLazyFragment> fragments = new ArrayList<>();
+    private final List<HomeChannels.Group> channels = new ArrayList<>();
     private boolean isDownOrUp = false;
     private boolean sortChange = false;
     private int currentSelected = 0;
@@ -101,7 +105,6 @@ public class HomeActivity extends BaseActivity {
     private String previousHomeName;
     private SourceBean previousHomeSource;
     private boolean homeSortLoading = false;
-    private boolean refreshHomeRec = false;
     private final Handler mHandler = new Handler();
     private long mExitTime = 0;
     private boolean eventBusRegistered = false;
@@ -151,9 +154,14 @@ public class HomeActivity extends BaseActivity {
     }
 
     boolean useCacheConfig = false;
+    private boolean startupCache;
+    private long startupStarted;
+    private boolean startupReported;
 
     @Override
     protected void init() {
+        startupStarted = android.os.SystemClock.elapsedRealtime();
+        com.github.tvbox.osc.base.App.startupMark("homeInit");
         EventBus.getDefault().register(this);
         eventBusRegistered = true;
         ControlManager.get().startServer();
@@ -165,6 +173,10 @@ public class HomeActivity extends BaseActivity {
             Bundle bundle = intent.getExtras();
             useCacheConfig = bundle.getBoolean("useCache", false);
         }
+        startupCache = (intent == null || !intent.hasExtra("useCache"))
+                && ApiConfig.get().hasRecentConfigCache();
+        com.github.tvbox.osc.base.App.startupMark("homeViewsReady cache=" + (useCacheConfig || startupCache));
+        android.util.Log.i("YueKanStartup", "configCache=" + (useCacheConfig || startupCache));
         initData();
     }
 
@@ -200,11 +212,11 @@ public class HomeActivity extends BaseActivity {
                             TextView textView = view.findViewById(R.id.tvTitle);
                             textView.getPaint().setFakeBoldText(false);
                             if (sortFocused == p) {
-                                view.animate().scaleX(1.1f).scaleY(1.1f).setInterpolator(new BounceInterpolator()).setDuration(300).start();
-                                textView.setTextColor(HomeActivity.this.getResources().getColor(R.color.color_FFFFFF));
+                                view.setSelected(true);
+                                TvFocusAnimator.animate(view, view.hasFocus());
                             } else {
-                                view.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start();
-                                textView.setTextColor(HomeActivity.this.getResources().getColor(R.color.color_BBFFFFFF));
+                                view.setSelected(false);
+                                TvFocusAnimator.animate(view, false);
                                 view.findViewById(R.id.tvFilter).setVisibility(View.GONE);
                                 view.findViewById(R.id.tvFilterColor).setVisibility(View.GONE);
                             }
@@ -221,10 +233,10 @@ public class HomeActivity extends BaseActivity {
                     HomeActivity.this.currentView = view;
                     HomeActivity.this.isDownOrUp = false;
                     HomeActivity.this.sortChange = true;
-                    view.animate().scaleX(1.1f).scaleY(1.1f).setInterpolator(new BounceInterpolator()).setDuration(300).start();
+                    view.setSelected(true);
+                    TvFocusAnimator.animate(view, true);
                     TextView textView = view.findViewById(R.id.tvTitle);
                     textView.getPaint().setFakeBoldText(true);
-                    textView.setTextColor(HomeActivity.this.getResources().getColor(R.color.color_FFFFFF));
                     textView.invalidate();
                     MovieSort.SortData sortData = sortAdapter.getItem(position);
                     if (!sortData.filters.isEmpty()) {
@@ -245,6 +257,8 @@ public class HomeActivity extends BaseActivity {
                         ((GridFragment) baseLazyFragment).showFilter();
                     } else if (baseLazyFragment instanceof UserFragment) {
                         showSiteSwitch();
+                    } else if (baseLazyFragment instanceof ChannelFragment) {
+                        ((ChannelFragment) baseLazyFragment).focusMenu();
                     }
                 }
             }
@@ -333,6 +347,7 @@ public class HomeActivity extends BaseActivity {
                     return;
                 }
                 SourceBean home = ApiConfig.get().getHomeSourceBean();
+                if (!startupReported) com.github.tvbox.osc.base.App.startupMark("categoriesReceived");
                 showSuccess();
                 clearHomePages();
                 List<MovieSort.SortData> newSortData;
@@ -341,27 +356,58 @@ public class HomeActivity extends BaseActivity {
                 } else {
                     newSortData = DefaultConfig.adjustSort(ApiConfig.get().getHomeSourceBean().getKey(), new ArrayList<>(), true);
                 }
+                newSortData = HomeChannels.merge(newSortData, channels);
+                boolean hasKids = false;
+                for (MovieSort.SortData data : newSortData) {
+                    if (KidsFragment.isKidsCategory(data.name)) hasKids = true;
+                }
+                if (!hasKids) {
+                    newSortData.add(new MovieSort.SortData(KidsFragment.CATEGORY_ID, "少儿"));
+                }
                 updateSortData(newSortData);
                 initViewPager(absXml);
-                updateHomeRec(absXml);
-                if (home != null && home.getName() != null && !home.getName().isEmpty()) tvName.setText(home.getName());
+                tvName.setText(R.string.app_name);
                 tvName.clearAnimation();
                 homeSortLoading = false;
                 loadingSourceKey = null;
                 previousHomeName = null;
                 previousHomeSource = null;
+                if (!startupReported) {
+                    startupReported = true;
+                    com.github.tvbox.osc.base.App.startupMark("homeReady");
+                    com.github.tvbox.osc.base.App.saveStartupProfile();
+                    contentLayout.getViewTreeObserver().addOnDrawListener(new android.view.ViewTreeObserver.OnDrawListener() {
+                        private boolean recorded;
+                        @Override public void onDraw() {
+                            if (recorded) return;
+                            recorded = true;
+                            com.github.tvbox.osc.base.App.startupMark("homeFirstDraw");
+                            contentLayout.post(() -> {
+                                if (contentLayout.getViewTreeObserver().isAlive())
+                                    contentLayout.getViewTreeObserver().removeOnDrawListener(this);
+                                com.github.tvbox.osc.base.App.saveStartupProfile();
+                            });
+                        }
+                    });
+                    android.util.Log.i("YueKanStartup", "homeReadyMs="
+                            + (android.os.SystemClock.elapsedRealtime() - startupStarted));
+                    mHandler.postDelayed(() -> {
+                        if (!isActivityUnavailable()) warmSearchSpidersOnce();
+                    }, 1500);
+                }
             }
         });
     }
 
     private boolean dataInitOk = false;
     private boolean jarInitOk = false;
+    private boolean startupSortLoaded = false;
     private boolean searchSpiderWarmStarted = false;
     private TipDialog mConfigErrorDialog;
 
     private void initData() {
         if (dataInitOk && jarInitOk) {
-            loadHomeSort(false);
+            if (!startupSortLoaded) loadHomeSort(false);
             if (hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 LOG.e("有");
             } else {
@@ -371,24 +417,33 @@ public class HomeActivity extends BaseActivity {
                 jumpActivity(LivePlayActivity.class);
             }
             //爬虫预热 仅首次加载
-            if(!useCacheConfig)warmSearchSpidersOnce();
             return;
         }
         tvNameAnimation();
         showLoading();
         if (dataInitOk && !jarInitOk) {
             if (!ApiConfig.get().getSpider().isEmpty()) {
-                ApiConfig.get().loadJar(useCacheConfig, ApiConfig.get().getSpider(), new ApiConfig.LoadConfigCallback() {
+                if (startupCache && !startupReported) {
+                    SourceBean home = ApiConfig.get().getHomeSourceBean();
+                    loadingSourceKey = home == null ? null : home.getKey();
+                    if (loadingSourceKey != null
+                            && sourceViewModel.publishCachedHomeSort(loadingSourceKey)) {
+                        startupSortLoaded = true;
+                        com.github.tvbox.osc.base.App.startupMark("cachedCategoriesPublished");
+                    } else loadingSourceKey = null;
+                }
+                ApiConfig.get().loadJar(useCacheConfig || startupCache, ApiConfig.get().getSpider(), new ApiConfig.LoadConfigCallback() {
                     @Override
                     public void success() {
                         jarInitOk = true;
-                        mHandler.postDelayed(new Runnable() {
+                        com.github.tvbox.osc.base.App.startupMark("jarReady");
+                        mHandler.post(new Runnable() {
                             @Override
                             public void run() {
 //                                if (!useCacheConfig) Toast.makeText(HomeActivity.this, "自定义jar加载成功", Toast.LENGTH_SHORT).show();
                                 initData();
                             }
-                        }, 50);
+                        });
                     }
 
                     @Override
@@ -413,11 +468,11 @@ public class HomeActivity extends BaseActivity {
                             }
                         },50);
                     }
-                });
+                }, startupSortLoaded);
             }
             return;
         }
-        ApiConfig.get().loadConfig(useCacheConfig, new ApiConfig.LoadConfigCallback() {
+        ApiConfig.get().loadConfig(useCacheConfig || startupCache, new ApiConfig.LoadConfigCallback() {
             @Override
             public void notice(String msg) {
                 mHandler.post(new Runnable() {
@@ -431,15 +486,16 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void success() {
                 dataInitOk = true;
+                com.github.tvbox.osc.base.App.startupMark("configReady");
                 if (ApiConfig.get().getSpider().isEmpty()) {
                     jarInitOk = true;
                 }
-                mHandler.postDelayed(new Runnable() {
+                mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         initData();
                     }
-                }, 50);
+                });
             }
 
             @Override
@@ -515,11 +571,12 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void loadHomeSort(boolean keepCurrentContent) {
+        if (!startupReported) com.github.tvbox.osc.base.App.startupMark("categoriesRequested");
         SourceBean home = ApiConfig.get().getHomeSourceBean();
         homeSortLoading = keepCurrentContent;
         if (keepCurrentContent && home != null && home.getName() != null && !home.getName().isEmpty()) {
             previousHomeName = tvName.getText() == null ? null : tvName.getText().toString();
-            tvName.setText(home.getName());
+            tvName.setText(R.string.app_name);
         }
         tvNameAnimation();
         if (home == null) {
@@ -539,11 +596,11 @@ public class HomeActivity extends BaseActivity {
         if (sortAdapter.getData().size() > 0) {
             for (MovieSort.SortData data : sortAdapter.getData()) {
                 if (data.id.equals("my0")) {
-                    if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 1 && absXml != null && absXml.videoList != null && absXml.videoList.size() > 0) {
-                        fragments.add(UserFragment.newInstance(absXml.videoList));
-                    } else {
-                        fragments.add(UserFragment.newInstance(null));
-                    }
+                    fragments.add(UserFragment.newInstance());
+                } else if (KidsFragment.CATEGORY_ID.equals(data.id)) {
+                    fragments.add(KidsFragment.newInstance());
+                } else if (HomeChannels.find(channels, data.id) != null) {
+                    fragments.add(ChannelFragment.newInstance(HomeChannels.find(channels, data.id)));
                 } else {
                     fragments.add(GridFragment.newInstance(data));
                 }
@@ -619,7 +676,6 @@ public class HomeActivity extends BaseActivity {
         // 如果处于 VOD 删除模式，则退出该模式并刷新界面
         if (HawkConfig.hotVodDelete) {
             HawkConfig.hotVodDelete = false;
-            UserFragment.homeHotVodAdapter.notifyDataSetChanged();
             return;
         }
 
@@ -646,9 +702,11 @@ public class HomeActivity extends BaseActivity {
             } else {
                 doExit();
             }
-        } else if (baseLazyFragment instanceof UserFragment && UserFragment.tvHotList.canScrollVertically(-1)) {
-            // 如果 UserFragment 列表可以向上滚动，则滚动到顶部
-            UserFragment.tvHotList.scrollToPosition(0);
+        } else if (baseLazyFragment instanceof ChannelFragment) {
+            if (!((ChannelFragment) baseLazyFragment).back()) this.mGridView.setSelection(0);
+        } else if (baseLazyFragment instanceof KidsFragment) {
+            this.mGridView.setSelection(0);
+        } else if (baseLazyFragment instanceof UserFragment && !mGridView.hasFocus()) {
             this.mGridView.setSelection(0);
         } else {
             doExit();
@@ -695,8 +753,8 @@ public class HomeActivity extends BaseActivity {
         if (tvName == null || tvDate == null) {
             return;
         }
-        tvName.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.ts_30));
-        tvDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.ts_26));
+        tvName.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.ts_26));
+        tvDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.ts_20));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -751,6 +809,16 @@ public class HomeActivity extends BaseActivity {
         if (topHide < 0)
             return false;
         int keyCode = event.getKeyCode();
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && mGridView.hasFocus()
+                && sortFocused >= 0 && sortFocused < fragments.size()
+                && fragments.get(sortFocused) instanceof ChannelFragment) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                mHandler.removeCallbacks(mDataRunnable);
+                mDataRunnable.run();
+                ((ChannelFragment) fragments.get(sortFocused)).focusMenu();
+            }
+            return true;
+        }
         if (keyCode == KeyEvent.KEYCODE_MENU) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 menuKeyDownTime = System.currentTimeMillis();
@@ -764,6 +832,11 @@ public class HomeActivity extends BaseActivity {
             }
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    public void focusChannelNavigation() {
+        View tab = mGridView.getLayoutManager().findViewByPosition(currentSelected);
+        if (tab != null) tab.requestFocus();
     }
 
     byte topHide = 0;
@@ -888,10 +961,6 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void refreshHomeSort() {
-        refreshHomeRec = true;
-        if (UserFragment.homeHotVodAdapter != null) {
-            UserFragment.homeHotVodAdapter.setNewData(new ArrayList<Movie.Video>());
-        }
         SourceBean home = ApiConfig.get().getHomeSourceBean();
         if (home != null) {
             SourceViewModel.clearSortCache(home.getKey());
@@ -899,12 +968,43 @@ public class HomeActivity extends BaseActivity {
         refreshHome(false);
     }
 
-    private void updateHomeRec(AbsSortXml absXml) {
-        if (!refreshHomeRec) return;
-        refreshHomeRec = false;
-        if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) != 1) return;
-        if (absXml == null || absXml.videoList == null || UserFragment.homeHotVodAdapter == null) return;
-        UserFragment.homeHotVodAdapter.setNewData(absXml.videoList);
+    private int findHomeCategory(String category) {
+        for (int i = 1; i < sortAdapter.getItemCount(); i++) {
+            String name = sortAdapter.getItem(i).name;
+            if (name == null || name.contains("榜单")) continue;
+            if (("movie".equals(category) && name.contains("电影"))
+                    || ("series".equals(category) && (name.contains("剧集") || name.contains("电视")))
+                    || ("variety".equals(category) && name.contains("综艺"))
+                    || ("kids".equals(category) && KidsFragment.isKidsCategory(name))) return i;
+        }
+        return -1;
+    }
+
+    public boolean hasHomeCategory(String category) {
+        return findHomeCategory(category) >= 0;
+    }
+
+    public MovieSort.SortData getHomeCategory(String category) {
+        int position = findHomeCategory(category);
+        if (position < 0) return null;
+        MovieSort.SortData data = sortAdapter.getItem(position);
+        HomeChannels.Group group = HomeChannels.find(channels, data.id);
+        return group == null ? data : HomeChannels.copy(group.hot);
+    }
+
+    public boolean openHomeCategory(String category) {
+        int position = findHomeCategory(category);
+        if (position < 0 || position >= fragments.size()) return false;
+        sortFocused = position;
+        sortChange = true;
+        mHandler.removeCallbacks(mDataRunnable);
+        mDataRunnable.run();
+        mGridView.setSelection(position);
+        mGridView.post(() -> {
+            View tab = mGridView.getLayoutManager().findViewByPosition(position);
+            if (tab != null) tab.requestFocus();
+        });
+        return true;
     }
 
     private void refreshHome(final boolean restart)
@@ -980,7 +1080,7 @@ public class HomeActivity extends BaseActivity {
             ApiConfig.get().setSourceBean(previousHomeSource);
         }
         if (previousHomeName != null && !previousHomeName.isEmpty()) {
-            tvName.setText(previousHomeName);
+            tvName.setText(R.string.app_name);
         }
         previousHomeSource = null;
         previousHomeName = null;

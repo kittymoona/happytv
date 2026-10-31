@@ -126,15 +126,32 @@ public class SourceViewModel extends ViewModel {
         }
         if (!shouldBypassSortCache(sourceKey, sourceBean) && !hasActionSort(sortXml)) {
             sortCache.put(sourceKey, sortXml);
+            String key = persistentSortKey(sourceBean);
+            List<String> keys = Hawk.get("recent_sort_cache_keys", new ArrayList<String>());
+            keys.remove(key);
+            keys.add(key);
+            while (keys.size() > 5) Hawk.delete(keys.remove(0));
+            Hawk.put("recent_sort_cache_keys", keys);
+            Hawk.put(key, System.currentTimeMillis()+"\n"+new Gson().toJson(sortXml));
         }
+    }
+
+    private static String persistentSortKey(SourceBean source) {
+        return "recent_sort_"+MD5.string2MD5(Hawk.get(HawkConfig.API_URL, "")+"|"
+                +source.getKey()+"|"+source.getApi()+"|"+source.getExt()+"|"+source.getJar()+"|"
+                +ApiConfig.get().getSpider()+"|"+Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC));
     }
 
     public static void clearSortCache(String sourceKey) {
         sortCache.remove(sourceKey);
+        SourceBean source = ApiConfig.get().getSource(sourceKey);
+        if (source != null) Hawk.delete(persistentSortKey(source));
     }
 
     public static void clearRuntimeCache() {
         sortCache.clear();
+        for (String key : Hawk.<List<String>>get("recent_sort_cache_keys", new ArrayList<String>())) Hawk.delete(key);
+        Hawk.delete("recent_sort_cache_keys");
         extendCache.clear();
     }
 
@@ -195,6 +212,25 @@ public class SourceViewModel extends ViewModel {
 
 
     // homeContent
+    public boolean publishCachedHomeSort(String sourceKey) {
+        SourceBean source = ApiConfig.get().getSource(sourceKey);
+        if (source == null || shouldBypassSortCache(sourceKey, source)) return false;
+        try {
+            String saved = Hawk.get(persistentSortKey(source), "");
+            int separator = saved.indexOf('\n');
+            if (separator <= 0) return false;
+            long age = System.currentTimeMillis() - Long.parseLong(saved.substring(0, separator));
+            if (age < 0 || age >= 30L * 60 * 1000) return false;
+            AbsSortXml cached = new Gson().fromJson(saved.substring(separator + 1), AbsSortXml.class);
+            if (cached == null || hasActionSort(cached)) return false;
+            if (Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 1
+                    && !hasHomeRecVideos(cached)) return false;
+            sortCache.put(sourceKey, cached);
+            postSortResult(sourceKey, cached);
+            return true;
+        } catch (Throwable ignored) { return false; }
+    }
+
     public void getSort(final String sourceKey) {
         if (sourceKey == null) {
             sortResult.postValue(new AbsSortXml());
@@ -215,6 +251,22 @@ public class SourceViewModel extends ViewModel {
 
         if (!shouldBypassSortCache(sourceKey, sourceBean)) {
             AbsSortXml cached = sortCache.get(sourceKey);
+            if (cached == null) {
+                String saved = Hawk.get(persistentSortKey(sourceBean), "");
+                try {
+                    int separator = saved.indexOf('\n');
+                    if (separator > 0) {
+                        long age = System.currentTimeMillis() - Long.parseLong(saved.substring(0, separator));
+                        if (age >= 0 && age < 30L * 60 * 1000) {
+                            cached = new Gson().fromJson(saved.substring(separator+1), AbsSortXml.class);
+                            if (cached != null && !hasActionSort(cached)) sortCache.put(sourceKey, cached);
+                            else cached = null;
+                        }
+                    }
+                } catch (Throwable ignored) {
+                    Hawk.delete(persistentSortKey(sourceBean));
+                }
+            }
             if (cached != null) {
                 int homeRec = Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC);
                 boolean shouldUseCache = (homeRec != 1) || (cached.videoList != null && !cached.videoList.isEmpty());

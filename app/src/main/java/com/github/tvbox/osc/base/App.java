@@ -31,6 +31,18 @@ import me.jessyan.autosize.unit.Subunits;
  */
 public class App extends MultiDexApplication {
     private static App instance;
+    private static final long startupClock = android.os.SystemClock.elapsedRealtime();
+    private static final StringBuilder startupProfile = new StringBuilder();
+    public static synchronized void startupMark(String stage) {
+        startupProfile.append(stage).append("=")
+                .append(android.os.SystemClock.elapsedRealtime() - startupClock).append("ms\n");
+    }
+    public static synchronized void saveStartupProfile() {
+        if (!com.github.tvbox.osc.BuildConfig.DEBUG) return;
+        try (java.io.FileOutputStream output = instance.openFileOutput("startup-profile.txt", MODE_PRIVATE)) {
+            output.write(startupProfile.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (java.io.IOException ignored) { }
+    }
 
     private static P2PClass p;
     public static String burl;
@@ -40,14 +52,17 @@ public class App extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        startupMark("applicationStart");
         initParams();
+        startupMark("preferencesReady");
         // OKGo
         OkGoHelper.init(); //台标获取
-        EpgUtil.init();
+        startupMark("networkAndEpgReady");
         // 初始化Web服务器
         ControlManager.init(this);
         //初始化数据库
         AppDataManager.init();
+        startupMark("databaseReady");
         LoadSir.beginBuilder()
                 .addCallback(new EmptyCallback())
                 .addCallback(new LoadingCallback())
@@ -57,15 +72,34 @@ public class App extends MultiDexApplication {
                 .setSupportSP(false)
                 .setSupportSubunits(Subunits.MM);
         PlayerHelper.init();
+        startupMark("playerLibrariesReady");
         QuickJSLoader.init();
         FileUtils.cleanPlayerCache();
+        startupMark("applicationReady");
     }
 
     private void initParams() {
         // Hawk
         Hawk.init(this).build();
-        Hawk.put(HawkConfig.DEBUG_OPEN, false);
-        Hawk.put(HawkConfig.PLAYER_IS_LIVE, false);
+        if (!Hawk.get("yuekan_danmu_off_migrated", false)) {
+            Hawk.put(HawkConfig.DANMU_OPEN, false);
+            Hawk.put("yuekan_danmu_off_migrated", true);
+        }
+        if (!Hawk.get("yuekan_default_layout_migrated", false)) {
+            Hawk.put(HawkConfig.HOME_LAYOUT, 1);
+            Hawk.put("yuekan_default_layout_migrated", true);
+        }
+        if (!Hawk.get(HawkConfig.HOME_REC_NONE_MIGRATED, false)) {
+            Hawk.put(HawkConfig.HOME_REC, HawkConfig.HOME_REC_NONE);
+            Hawk.put(HawkConfig.HOME_REC_NONE_MIGRATED, true);
+        }
+        String configuredApi = Hawk.get(HawkConfig.API_URL, "");
+        if (configuredApi == null || configuredApi.trim().isEmpty()
+                || "asset://public_config.json".equals(configuredApi)) {
+            Hawk.put(HawkConfig.API_URL, "http://www.饭太硬.net/tv");
+        }
+        if (Hawk.get(HawkConfig.DEBUG_OPEN, false)) Hawk.put(HawkConfig.DEBUG_OPEN, false);
+        if (Hawk.get(HawkConfig.PLAYER_IS_LIVE, false)) Hawk.put(HawkConfig.PLAYER_IS_LIVE, false);
         if (!Hawk.contains(HawkConfig.PLAY_TYPE)) {
             Hawk.put(HawkConfig.PLAY_TYPE, 2);
         } else if (Hawk.get(HawkConfig.PLAY_TYPE, 2) == 0) {

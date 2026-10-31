@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="tv_card_radius">24mm</dimen>
+    <dimen name="tv_control_radius">20mm</dimen>
+    <dimen name="tv_screen_inset">50mm</dimen>
+    <dimen name="tv_focus_padding">12mm</dimen>
+
+    <style name="TvShortcut">
+        <item name="android:layout_width">0mm</item>
+        <item name="android:layout_height">76mm</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">5mm</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/tv_shortcut_focus</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:paddingLeft">10mm</item>
+        <item name="android:paddingRight">10mm</item>
+    </style>
+    <style name="TvShortcutIcon">
+        <item name="android:layout_width">28mm</item>
+        <item name="android:layout_height">28mm</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+    <style name="TvShortcutLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">10mm</item>
+        <item name="android:textSize">22mm</item>
+        <item name="android:textColor">@color/tv_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:focusable">false</item>
+    </style>
+    <style name="TvPosterTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">36mm</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingLeft">4mm</item>
+        <item name="android:paddingRight">4mm</item>
+        <item name="android:textSize">22mm</item>
+        <item name="android:textColor">@color/tv_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="TvPosterSubtitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">24mm</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingLeft">4mm</item>
+        <item name="android:paddingRight">4mm</item>
+        <item name="android:textSize">16mm</item>
+        <item name="android:textColor">@color/tv_text_secondary</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="TvPosterBadge">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/tv_badge</item>
+        <item name="android:paddingLeft">8mm</item>
+        <item name="android:paddingRight">8mm</item>
+        <item name="android:paddingTop">4mm</item>
+        <item name="android:paddingBottom">4mm</item>
+        <item name="android:textSize">16mm</item>
+        <item name="android:textColor">@color/tv_text_primary</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+</resources>

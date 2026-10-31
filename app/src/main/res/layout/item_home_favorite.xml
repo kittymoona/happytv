@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="220mm" android:layout_height="wrap_content" android:orientation="vertical"
+    android:padding="3mm" android:focusable="true" android:background="@drawable/tv_poster_focus">
+    <FrameLayout android:layout_width="214mm" android:layout_height="128mm"
+        android:background="@drawable/tv_poster_surface" android:clipToOutline="true">
+        <ImageView android:id="@+id/ivThumb" android:layout_width="match_parent"
+            android:layout_height="match_parent" android:scaleType="centerCrop" />
+    </FrameLayout>
+    <TextView android:id="@+id/tvName" style="@style/TvPosterTitle" />
+</LinearLayout>

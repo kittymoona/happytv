@@ -1,0 +1,10 @@
+// Room 2.3's bundled SQLite verifier predates macOS ARM64 support.
+// Apply with --init-script gradle/apple-silicon.init.gradle on Apple Silicon.
+// Only the host annotation processor changes; APK runtime dependencies do not.
+allprojects {
+    configurations.configureEach {
+        if (name.toLowerCase().contains("annotationprocessor")) {
+            resolutionStrategy.force "org.xerial:sqlite-jdbc:3.45.3.0"
+        }
+    }
+}

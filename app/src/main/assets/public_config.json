@@ -1,0 +1,26 @@
+{
+  "spider": "",
+  "sites": [
+    {
+      "key": "public_media",
+      "name": "公开影音",
+      "type": 3,
+      "api": "builtin:public-media",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 0,
+      "playerType": 2
+    }
+  ],
+  "lives": [
+    {
+      "name": "公开新闻直播 · IPTV-org",
+      "type": 0,
+      "url": "https://iptv-org.github.io/iptv/categories/news.m3u",
+      "playerType": 2
+    }
+  ],
+  "parses": [],
+  "flags": [],
+  "ads": []
+}

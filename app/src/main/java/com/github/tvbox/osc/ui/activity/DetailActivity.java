@@ -137,6 +137,7 @@ public class DetailActivity extends BaseActivity {
     public String sourceKey;
     public String firstsourceKey;
     private boolean fromCollect;
+    private boolean resumePlayback;
     boolean seriesSelect = false;
     private View seriesFlagFocus = null;
     private boolean isReverse;
@@ -969,6 +970,10 @@ public class DetailActivity extends BaseActivity {
                             llPlayerFragmentContainerBlock.setVisibility(View.VISIBLE);
                             toggleSubtitleTextSize();
                         }
+                        if (resumePlayback) {
+                            resumePlayback = false;
+                            tvPlay.performClick();
+                        }
                         // startQuickSearch();
                     } else {
                         mGridViewFlag.setVisibility(View.GONE);
@@ -1014,6 +1019,7 @@ public class DetailActivity extends BaseActivity {
             vod_name=bundle.getString("title", "");
             vod_picture=bundle.getString("picture", "");
             fromCollect = bundle.getBoolean("collect", false);
+            resumePlayback = bundle.getBoolean("resumePlayback", false);
             Object fallbackCandidates = bundle.getSerializable(EXTRA_DETAIL_FALLBACK_CANDIDATES);
             if (fallbackCandidates instanceof ArrayList) {
                 cacheDetailFallbackCandidates(vod_name, (ArrayList<Movie.Video>) fallbackCandidates);

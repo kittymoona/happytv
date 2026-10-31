@@ -41,15 +41,27 @@
     <color name="color_text_primary">#FFFFFAE0</color>
 
     <!-- Unified dialog palette. Change these to update dialog surfaces globally. -->
-    <color name="dialog_panel_bg">#D91D202A</color>
-    <color name="dialog_panel_stroke">#33FFFFFF</color>
-    <color name="dialog_control_bg">#80353744</color>
-    <color name="dialog_control_bg_focused">#CC1890FF</color>
-    <color name="dialog_control_stroke">#22FFFFFF</color>
-    <color name="dialog_control_stroke_focused">#CC02F8E1</color>
-    <color name="dialog_input_bg">#66353744</color>
+    <color name="dialog_panel_bg">#FA2864B6</color>
+    <color name="dialog_panel_stroke">#55FFFFFF</color>
+    <color name="dialog_control_bg">#FF3778C6</color>
+    <color name="dialog_control_bg_focused">#FF5299E3</color>
+    <color name="dialog_control_stroke">#35FFFFFF</color>
+    <color name="dialog_control_stroke_focused">#FFFFFFFF</color>
+    <color name="dialog_input_bg">#FF235AA8</color>
     <color name="dialog_text_primary">#FFFFFFFF</color>
-    <color name="dialog_text_hint">#80FFFFFF</color>
+    <color name="dialog_text_hint">#D6E2FF</color>
+    <color name="tv_background">#246BD1</color>
+    <color name="tv_background_start">#2255CF</color>
+    <color name="tv_background_center">#287BDC</color>
+    <color name="tv_background_end">#56A6E8</color>
+    <color name="tv_surface">#347BC7</color>
+    <color name="tv_surface_focused">#5299E3</color>
+    <color name="tv_surface_stroke">#55B9DEFF</color>
+    <color name="tv_text_primary">#FFFFFF</color>
+    <color name="tv_text_secondary">#E2EBFF</color>
+    <color name="tv_focus">#FFFFFF</color>
+    <color name="tv_text_on_focus">#164B91</color>
+    <color name="tv_badge">#E6235AA8</color>
 
 
 

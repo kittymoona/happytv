@@ -46,10 +46,12 @@ public class HomeHotVodAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHol
             tvRateValue = bean != null ? bean.getName() : "";
         }
         tvRate.setText(tvRateValue);
+        tvRate.setVisibility(Hawk.get(HawkConfig.HOME_REC, HawkConfig.DEFAULT_HOME_REC) == 2
+                && !TextUtils.isEmpty(tvRateValue) ? View.VISIBLE : View.GONE);
 
         TextView tvNote = helper.getView(R.id.tvNote);
         if (item.note == null || item.note.isEmpty()) {
-            tvNote.setVisibility(View.GONE);
+            tvNote.setVisibility(View.INVISIBLE);
         } else {
             tvNote.setText(item.note);
             tvNote.setVisibility(View.VISIBLE);
@@ -86,6 +88,10 @@ public class HomeHotVodAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHol
             containerParams.height = AutoSizeUtils.mm2px(mContext, height);
             containerParams.width = AutoSizeUtils.mm2px(mContext, width);
             container.setLayoutParams(containerParams);
+            ViewGroup card = (ViewGroup) container.getParent();
+            ViewGroup.LayoutParams cardParams = card.getLayoutParams();
+            cardParams.width = containerParams.width + card.getPaddingLeft() + card.getPaddingRight();
+            card.setLayoutParams(cardParams);
         }
     }
 }

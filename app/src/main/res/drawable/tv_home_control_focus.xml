@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape><corners android:radius="@dimen/tv_card_radius" /><solid android:color="@color/tv_surface_focused" />
+            <stroke android:width="2mm" android:color="@color/tv_focus" /></shape>
+    </item>
+    <item><shape><corners android:radius="@dimen/tv_card_radius" /><solid android:color="@color/tv_surface" /></shape></item>
+</selector>

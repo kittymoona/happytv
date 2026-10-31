@@ -46,6 +46,7 @@ import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.PlayerHelper;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
+import com.github.tvbox.osc.ui.tv.HomeLayouts;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.FileCallback;
 import com.lzy.okgo.model.Progress;
@@ -93,6 +94,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
     private TextView tvSearchView;
     private TextView tvShowPreviewText;
     private TextView tvFastSearchText;
+    private TextView tvIncludeCloudText;
     private TextView tvm3u8AdText;
     private TextView tvAutoSwitchLineText;
     private TextView tvRecStyleText;
@@ -118,8 +120,39 @@ public class ModelSettingFragment extends BaseLazyFragment {
 
     @Override
     protected void init() {
+        TextView layoutName = findViewById(R.id.tvHomeLayout);
+        layoutName.setText(HomeLayouts.NAMES[HomeLayouts.selected()]);
+        findViewById(R.id.llHomeLayout).setOnClickListener(view -> {
+            FastClickCheckUtil.check(view);
+            ArrayList<Integer> layouts = new ArrayList<>();
+            for (int i = 0; i < HomeLayouts.NAMES.length; i++) layouts.add(i);
+            SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
+            dialog.setTip("首页布局 · 选择后返回首页生效");
+            dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
+                public void click(Integer value, int position) {
+                    Hawk.put(HawkConfig.HOME_LAYOUT, value);
+                    layoutName.setText(HomeLayouts.NAMES[value]);
+                    dialog.dismiss();
+                }
+                public String getDisplay(Integer value) {
+                    return HomeLayouts.NAMES[value];
+                }
+            }, new DiffUtil.ItemCallback<Integer>() {
+                public boolean areItemsTheSame(@NonNull Integer oldItem, @NonNull Integer newItem) {
+                    return oldItem.equals(newItem);
+                }
+                public boolean areContentsTheSame(@NonNull Integer oldItem, @NonNull Integer newItem) {
+                    return oldItem.equals(newItem);
+                }
+            }, layouts, HomeLayouts.selected());
+            dialog.show();
+        });
+        // These old recommendation switches controlled the retired home screen.
+        ((View) findViewById(R.id.llHomeRec).getParent()).setVisibility(View.GONE);
         tvFastSearchText = findViewById(R.id.showFastSearchText);
         tvFastSearchText.setText(Hawk.get(HawkConfig.FAST_SEARCH_MODE, true) ? "开启" : "关闭");
+        tvIncludeCloudText = findViewById(R.id.searchIncludeCloudText);
+        tvIncludeCloudText.setText(Hawk.get(HawkConfig.SEARCH_INCLUDE_CLOUD, false) ? "开启" : "关闭");
         tvm3u8AdText = findViewById(R.id.m3u8AdText);
         tvm3u8AdText.setText(Hawk.get(HawkConfig.M3U8_PURIFY, false) ? "开启" : "关闭");
         tvDanmuOpenText = findViewById(R.id.danmuOpenText);
@@ -616,6 +649,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 types.add(0);
                 types.add(1);
                 types.add(2);
+                types.add(HawkConfig.HOME_REC_NONE);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip("请选择首页列表数据");
                 dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
@@ -729,13 +763,18 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 dialog.show();
             }
         });
-        findViewById(R.id.showFastSearch).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.searchIncludeCloud).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FastClickCheckUtil.check(v);
-                Hawk.put(HawkConfig.FAST_SEARCH_MODE, !Hawk.get(HawkConfig.FAST_SEARCH_MODE, true));
-                tvFastSearchText.setText(Hawk.get(HawkConfig.FAST_SEARCH_MODE, true) ? "开启" : "关闭");
+                Hawk.put(HawkConfig.SEARCH_INCLUDE_CLOUD, !Hawk.get(HawkConfig.SEARCH_INCLUDE_CLOUD, false));
+                tvIncludeCloudText.setText(Hawk.get(HawkConfig.SEARCH_INCLUDE_CLOUD, false) ? "开启" : "关闭");
             }
+        });
+        findViewById(R.id.showFastSearch).setOnClickListener(v -> {
+            FastClickCheckUtil.check(v);
+            Hawk.put(HawkConfig.FAST_SEARCH_MODE, !Hawk.get(HawkConfig.FAST_SEARCH_MODE, true));
+            tvFastSearchText.setText(Hawk.get(HawkConfig.FAST_SEARCH_MODE, true) ? "开启" : "关闭");
         });
         findViewById(R.id.m3u8Ad).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1092,7 +1131,9 @@ public class ModelSettingFragment extends BaseLazyFragment {
     }
 
     String getHomeRecName(int type) {
-        if (type == 1) {
+        if (type == HawkConfig.HOME_REC_NONE) {
+            return "不显示";
+        } else if (type == 1) {
             return "站点推荐";
         } else if (type == 2) {
             return "观看历史";

@@ -13,6 +13,50 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SearchHelper {
+    private static final Pattern CLOUD_SOURCE = Pattern.compile(
+            "网盘|雲盤|云盘|阿里|夸克|百度盘|百度网盘|天翼|迅雷|磁力|玩偶|盘搜|盘\\s*搜|小纸条|木偶|"
+                    + "(?i:quark|aliyun|alipan|ucpan|baidupan|tianyi|xunlei|"
+                    + "pan\\.baidu\\.com|pan\\.quark\\.cn|drive\\.uc\\.cn|"
+                    + "aliyundrive\\.com|alipan\\.com|115\\.com|cloud\\.189\\.cn|"
+                    + "(?:^|[^a-z0-9])(?:115|123pan|123云盘|uc盘)(?:$|[^a-z0-9]))");
+
+    public static boolean includeCloudResults() {
+        return Hawk.get(HawkConfig.SEARCH_INCLUDE_CLOUD, false);
+    }
+
+    public static boolean isSearchSourceAllowed(SourceBean source) {
+        return source != null && (includeCloudResults()
+                || !CLOUD_SOURCE.matcher(source.getName()+" "+source.getKey()+" "+source.getApi()).find());
+    }
+
+    public static boolean isSearchResultAllowed(com.github.tvbox.osc.bean.Movie.Video video) {
+        if (video == null) return false;
+        if (includeCloudResults()) return true;
+        SourceBean source = ApiConfig.get().getSource(video.sourceKey);
+        if (source != null && !isSearchSourceAllowed(source)) return false;
+        if (video.urlBean != null && video.urlBean.infoList != null) {
+            for (com.github.tvbox.osc.bean.Movie.Video.UrlBean.UrlInfo info : video.urlBean.infoList) {
+                if (info != null && CLOUD_SOURCE.matcher(
+                        (info.flag == null ? "" : info.flag)+" "+(info.urls == null ? "" : info.urls)).find()) return false;
+                if (info != null && info.beanList != null) {
+                    for (com.github.tvbox.osc.bean.Movie.Video.UrlBean.UrlInfo.InfoBean episode : info.beanList) {
+                        if (episode != null && episode.url != null
+                                && CLOUD_SOURCE.matcher(episode.url).find()) return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public static List<com.github.tvbox.osc.bean.Movie.Video> filterSearchResults(
+            List<com.github.tvbox.osc.bean.Movie.Video> videos) {
+        List<com.github.tvbox.osc.bean.Movie.Video> allowed = new ArrayList<>();
+        for (com.github.tvbox.osc.bean.Movie.Video video : videos) {
+            if (isSearchResultAllowed(video)) allowed.add(video);
+        }
+        return allowed;
+    }
 
     private static final Pattern SEASON_SUFFIX_PATTERN = Pattern.compile(
             "^(.*?)[\\s._-]*(?:(第\\s*)?([0-9]{1,2}|[零一二三四五六七八九十百千万两]+)(\\s*季)|([0-9]{1,2}))$");

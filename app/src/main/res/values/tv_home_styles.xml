@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TvHomeCategory">
+        <item name="android:layout_width">0mm</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">6mm</item>
+        <item name="android:padding">22mm</item>
+        <item name="android:background">@drawable/tv_home_control_focus</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:descendantFocusability">blocksDescendants</item>
+    </style>
+    <style name="TvHomeCategoryTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">38mm</item>
+        <item name="android:textColor">@color/tv_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+    <style name="TvHomeCategoryIcon">
+        <item name="android:layout_width">90mm</item>
+        <item name="android:layout_height">90mm</item>
+        <item name="android:layout_alignParentRight">true</item>
+        <item name="android:layout_alignParentTop">true</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+    <style name="TvHomeCategoryAction">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_alignParentBottom">true</item>
+        <item name="android:textSize">18mm</item>
+        <item name="android:textColor">@color/tv_text_secondary</item>
+    </style>
+    <style name="TvHomeShortcut">
+        <item name="android:layout_width">0mm</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">6mm</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">@drawable/tv_home_control_focus</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:descendantFocusability">blocksDescendants</item>
+    </style>
+    <style name="TvHomeShortcutIcon">
+        <item name="android:layout_width">44mm</item>
+        <item name="android:layout_height">44mm</item>
+        <item name="android:tint">@color/tv_text_primary</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+    <style name="TvHomeShortcutLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8mm</item>
+        <item name="android:textSize">22mm</item>
+        <item name="android:textColor">@color/tv_text_primary</item>
+    </style>
+</resources>

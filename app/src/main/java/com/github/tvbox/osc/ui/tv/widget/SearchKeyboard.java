@@ -5,6 +5,8 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
+import android.util.TypedValue;
 
 import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
@@ -21,6 +23,7 @@ import com.github.tvbox.osc.R;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import me.jessyan.autosize.utils.AutoSizeUtils;
 
 
 /**
@@ -30,6 +33,7 @@ import java.util.List;
  */
 public class SearchKeyboard extends FrameLayout {
     private RecyclerView mRecyclerView;
+    private KeyboardAdapter keyboardAdapter;
     private List<String> keys = Arrays.asList("远程搜索", "删除", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
     private List<Keyboard> keyboardList = new ArrayList<>();
     private OnSearchKeyListener searchKeyListener;
@@ -38,6 +42,8 @@ public class SearchKeyboard extends FrameLayout {
         public void onFocusChange(View itemView, boolean hasFocus) {
             if (null != itemView && itemView != mRecyclerView) {
                 itemView.setSelected(hasFocus);
+                itemView.animate().scaleX(hasFocus ? 1.04f : 1f)
+                        .scaleY(hasFocus ? 1.04f : 1f).setDuration(120).start();
             }
         }
     };
@@ -78,6 +84,7 @@ public class SearchKeyboard extends FrameLayout {
             keyboardList.add(new Keyboard(1, keys.get(i)));
         }
         final KeyboardAdapter adapter = new KeyboardAdapter(keyboardList);
+        keyboardAdapter = adapter;
         mRecyclerView.setAdapter(adapter);
         adapter.setSpanSizeLookup(new BaseQuickAdapter.SpanSizeLookup() {
             @Override
@@ -97,6 +104,22 @@ public class SearchKeyboard extends FrameLayout {
                 if (searchKeyListener != null) {
                     searchKeyListener.onSearchKey(position, keyboard.getKey());
                 }
+            }
+        });
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (h <= 0 || keyboardAdapter == null) return;
+        // Seven rows always fit the available space, including TV and tablet ratios.
+        int margin = getResources().getDimensionPixelSize(R.dimen.vs_4);
+        final int rowHeight = Math.max(1,
+                (h - mRecyclerView.getPaddingTop() - mRecyclerView.getPaddingBottom()) / 7 - margin * 2);
+        mRecyclerView.post(() -> {
+            if (keyboardAdapter.rowHeight != rowHeight) {
+                keyboardAdapter.rowHeight = rowHeight;
+                keyboardAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -125,6 +148,7 @@ public class SearchKeyboard extends FrameLayout {
     }
 
     private static class KeyboardAdapter extends BaseMultiItemQuickAdapter<Keyboard, BaseViewHolder> {
+        private int rowHeight;
 
         private KeyboardAdapter(List<Keyboard> data) {
             super(data);
@@ -135,7 +159,15 @@ public class SearchKeyboard extends FrameLayout {
         protected void convert(BaseViewHolder helper, Keyboard item) {
             switch (helper.getItemViewType()) {
                 case 1:
-                    helper.setText(R.id.keyName, item.key);
+                    String label = item.key.equals("远程搜索") ? "手机输入"
+                            : item.key.equals("删除") ? "退格删除" : item.key;
+                    helper.setText(R.id.keyName, label);
+                    TextView name = helper.getView(R.id.keyName);
+                    name.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                            AutoSizeUtils.mm2px(mContext, item.key.length() > 1 ? 24 : 32));
+                    if (rowHeight > 0) {
+                        helper.itemView.getLayoutParams().height = rowHeight;
+                    }
                     break;
             }
         }

@@ -1,231 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:clipChildren="false"
-    android:clipToPadding="false"
-    android:orientation="horizontal">
-
-    <LinearLayout
-        android:layout_width="@dimen/vs_420"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="@dimen/vs_20">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/vs_10"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tvSearchCheckboxBtn"
-                android:layout_width="match_parent"
-                android:layout_height="28mm"
-                android:background="@drawable/shape_user_focus"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="指定搜索源"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/ts_20" />
-
-            <EditText
-                android:id="@+id/etSearch"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/vs_50"
-                android:layout_marginTop="@dimen/vs_10"
-                android:background="@drawable/input_search"
-                android:hint="请输入要搜索的内容"
-                android:inputType="text"
-                android:imeOptions="actionDone"
-                android:maxLines="1"
-                android:paddingLeft="@dimen/vs_10"
-                android:paddingRight="@dimen/vs_10"
-                android:textColor="@android:color/white"
-                android:textColorHint="#99FFFFFF"
-                android:textSize="@dimen/ts_20" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/vs_50"
-                android:layout_marginTop="@dimen/vs_10"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tvSearch"
-                    android:layout_width="0mm"
-                    android:layout_height="@dimen/vs_50"
-                    android:layout_weight="1"
-                    android:background="@drawable/shape_user_focus"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:text="搜索"
-                    android:textColor="@android:color/white"
-                    android:textSize="@dimen/ts_20" />
-
-                <Space
-                    android:layout_width="@dimen/vs_10"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/tvClear"
-                    android:layout_width="0mm"
-                    android:layout_height="@dimen/vs_50"
-                    android:layout_weight="1"
-                    android:background="@drawable/shape_user_focus"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:text="清空"
-                    android:textColor="@android:color/white"
-                    android:textSize="@dimen/ts_20" />
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@drawable/tv_background" android:orientation="vertical"
+    android:padding="32mm">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="48mm"
+        android:gravity="center_vertical">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="悦看TV · 搜索" android:textSize="28mm" android:textColor="@color/tv_text_primary"/>
+        <Space android:layout_width="0mm" android:layout_height="1mm" android:layout_weight="1"/>
+        <TextView android:id="@+id/tvSearchCheckboxBtn" android:layout_width="168mm"
+            android:layout_height="44mm" android:text="选择搜索源" android:gravity="center"
+            android:textSize="20mm" android:textColor="@color/tv_search_text"
+            android:background="@drawable/tv_search_focus" android:focusable="true"/>
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="0mm"
+        android:layout_weight="1" android:layout_marginTop="24mm">
+        <LinearLayout android:layout_width="400mm" android:layout_height="match_parent"
+            android:orientation="vertical" android:paddingRight="16mm">
+            <TextView android:layout_width="match_parent" android:layout_height="34mm"
+                android:text="输入片名 / 演员的首字母或全拼" android:textSize="19mm"
+                android:textColor="@color/tv_text_secondary" android:gravity="center_vertical"/>
+            <EditText android:id="@+id/etSearch" android:layout_width="match_parent"
+                android:layout_height="62mm" android:layout_marginTop="8mm"
+                android:background="@drawable/tv_search_input" android:hint="例如：小城良方 → XCLF"
+                android:textColor="@color/tv_text_primary" android:textColorHint="@color/dialog_text_hint"
+                android:textSize="23mm" android:paddingLeft="16mm" android:paddingRight="16mm"
+                android:inputType="text" android:imeOptions="actionSearch" android:maxLines="1"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="48mm"
+                android:layout_marginTop="12mm">
+                <TextView android:id="@+id/tvSearch" android:layout_width="0mm"
+                    android:layout_height="match_parent" android:layout_weight="1"
+                    android:text="搜索" android:textSize="23mm" android:gravity="center"
+                    android:textColor="@color/tv_search_text" android:background="@drawable/tv_search_focus"
+                    android:focusable="true"/>
+                <TextView android:id="@+id/tvClear" android:layout_width="0mm"
+                    android:layout_height="match_parent" android:layout_weight="1" android:layout_marginLeft="12mm"
+                    android:text="清空" android:textSize="22mm" android:gravity="center"
+                    android:textColor="@color/tv_search_text" android:background="@drawable/tv_search_focus"
+                    android:focusable="true"/>
+            </LinearLayout>
+            <com.github.tvbox.osc.ui.tv.widget.SearchKeyboard android:id="@+id/keyBoardRoot"
+                android:layout_width="match_parent" android:layout_height="0mm" android:layout_weight="1"
+                android:layout_marginTop="16mm"/>
+            <LinearLayout android:id="@+id/remoteRoot" android:layout_width="match_parent"
+                android:layout_height="0mm" android:layout_weight="1" android:orientation="vertical"
+                android:gravity="center" android:visibility="gone">
+                <TextView android:id="@+id/tvAddress" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:textSize="20mm" android:textColor="@color/tv_text_primary"/>
+                <ImageView android:id="@+id/ivQRCode" android:layout_width="200mm"
+                    android:layout_height="200mm" android:contentDescription="手机输入二维码"/>
             </LinearLayout>
         </LinearLayout>
-
-        <com.github.tvbox.osc.ui.tv.widget.SearchKeyboard
-            android:id="@+id/keyBoardRoot"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <LinearLayout
-            android:id="@+id/remoteRoot"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tvAddress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/vs_20"
-                android:gravity="center_horizontal"
-                android:lineSpacingMultiplier="1.4"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/ts_20" />
-
-            <ImageView
-                android:id="@+id/ivQRCode"
-                android:layout_width="300mm"
-                android:layout_height="300mm"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="20mm"
-                tools:ignore="InOrMmUsage" />
+        <View android:layout_width="1mm" android:layout_height="match_parent" android:background="#25FFFFFF"/>
+        <LinearLayout android:id="@+id/llWord" android:layout_width="276mm"
+            android:layout_height="match_parent" android:orientation="vertical"
+            android:paddingLeft="24mm" android:paddingRight="20mm">
+            <TextView android:id="@+id/wordSwitch" android:layout_width="match_parent"
+                android:layout_height="44mm" android:text="热门搜索" android:textSize="24mm"
+                android:textColor="@color/tv_text_primary" android:gravity="center_vertical"/>
+            <com.owen.tvrecyclerview.widget.TvRecyclerView android:id="@+id/mGridViewWord"
+                android:layout_width="match_parent" android:layout_height="0mm" android:layout_weight="1"
+                android:layout_marginTop="12mm" android:padding="4mm"
+                app:tv_selectedItemIsCentered="false" app:tv_verticalSpacingWithMargins="8mm"/>
+        </LinearLayout>
+        <View android:layout_width="1mm" android:layout_height="match_parent" android:background="#25FFFFFF"/>
+        <LinearLayout android:layout_width="0mm" android:layout_height="match_parent"
+            android:layout_weight="1" android:orientation="vertical" android:paddingLeft="24mm">
+            <LinearLayout android:id="@+id/llHistoryWord" android:layout_width="match_parent"
+                android:layout_height="match_parent" android:orientation="vertical">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="44mm"
+                    android:gravity="center_vertical">
+                    <TextView android:id="@+id/tvHistoryTitle" android:layout_width="0mm"
+                        android:layout_height="match_parent" android:layout_weight="1"
+                        android:text="搜索历史" android:textSize="24mm" android:gravity="center_vertical"
+                        android:textColor="@color/tv_text_primary"/>
+                    <ImageView android:id="@+id/tvHistoryClear" android:layout_width="40mm"
+                        android:layout_height="40mm" android:padding="10mm" android:src="@drawable/icon_delete"
+                        android:contentDescription="清空搜索历史" android:background="@drawable/tv_search_focus"
+                        android:focusable="true"/>
+                </LinearLayout>
+                <TextView android:id="@+id/historyEmpty" android:layout_width="match_parent"
+                    android:layout_height="64mm" android:text="还没有搜索记录" android:gravity="center_vertical"
+                    android:textSize="20mm" android:textColor="@color/tv_text_secondary" android:visibility="gone"/>
+                <ScrollView android:layout_width="match_parent" android:layout_height="0mm"
+                    android:layout_weight="1" android:layout_marginTop="12mm">
+                    <GridLayout android:id="@+id/historyWordGrid" android:layout_width="match_parent"
+                        android:layout_height="wrap_content" android:columnCount="1"/>
+                </ScrollView>
+                <TextView android:layout_width="match_parent" android:layout_height="96mm"
+                    android:text="用遥控器输入首字母\n选择左侧联想词，结果会显示在这里"
+                    android:gravity="center_vertical" android:lineSpacingMultiplier="1.4"
+                    android:textSize="19mm" android:textColor="@color/tv_text_secondary"/>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/searchResultsHost" android:layout_width="match_parent"
+                android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
+                <TextView android:id="@+id/searchResultTitle" android:layout_width="match_parent"
+                    android:layout_height="44mm" android:text="搜索结果" android:textSize="24mm"
+                    android:gravity="center_vertical" android:textColor="@color/tv_text_primary"/>
+                <LinearLayout android:id="@+id/llLayout" android:layout_width="match_parent"
+                    android:layout_height="0mm" android:layout_weight="1" android:orientation="vertical"
+                    android:layout_marginTop="12mm">
+                    <com.owen.tvrecyclerview.widget.TvRecyclerView android:id="@+id/mGridView"
+                        android:layout_width="match_parent" android:layout_height="match_parent"
+                        android:padding="4mm" android:visibility="invisible"
+                        app:tv_selectedItemIsCentered="false" app:tv_horizontalSpacingWithMargins="12mm"
+                        app:tv_verticalSpacingWithMargins="14mm"/>
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llWord"
-        android:layout_width="@dimen/vs_240"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:paddingTop="@dimen/vs_20"
-        android:paddingBottom="@dimen/vs_20">
-
-        <TextView
-            android:id="@+id/wordSwitch"
-            android:layout_width="match_parent"
-            android:layout_height="28mm"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="@dimen/vs_10"
-            android:background="@drawable/shape_user_focus"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="热词 | 历史"
-            android:textColor="@android:color/white"
-            android:textSize="@dimen/ts_20"
-            android:textStyle="normal" />
-
-        <com.owen.tvrecyclerview.widget.TvRecyclerView
-            android:id="@+id/mGridViewWord"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            app:tv_horizontalSpacingWithMargins="@dimen/vs_5"
-            app:tv_selectedItemIsCentered="true"
-            app:tv_verticalSpacingWithMargins="@dimen/vs_5" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llHistoryWord"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="@dimen/vs_100"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:orientation="vertical"
-        android:paddingTop="@dimen/vs_20"
-        android:paddingBottom="@dimen/vs_20"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/vs_50"
-            android:gravity="top"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvHistoryTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="28mm"
-                android:gravity="center_vertical"
-                android:letterSpacing="0.08"
-                android:text="历  史"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/ts_22"
-                android:textStyle="bold" />
-
-            <Space
-                android:layout_width="0mm"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageView
-                android:id="@+id/tvHistoryClear"
-                android:layout_width="@dimen/vs_50"
-                android:layout_height="@dimen/vs_50"
-                android:layout_marginRight="@dimen/vs_20"
-                android:background="@drawable/shape_user_focus"
-                android:focusable="true"
-                android:padding="@dimen/vs_5"
-                android:src="@drawable/icon_delete" />
-        </LinearLayout>
-
-        <GridLayout
-            android:id="@+id/historyWordGrid"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/vs_10"
-            android:columnCount="1"
-            android:clipChildren="false"
-            android:clipToPadding="false" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="@dimen/vs_10"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:orientation="vertical"
-        android:paddingTop="@dimen/vs_10"
-        android:paddingRight="@dimen/vs_20"
-        android:paddingBottom="@dimen/vs_10">
-
-        <com.owen.tvrecyclerview.widget.TvRecyclerView
-            android:id="@+id/mGridView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:paddingRight="@dimen/vs_20"
-            android:visibility="invisible"
-            app:tv_horizontalSpacingWithMargins="@dimen/vs_5"
-            app:tv_selectedItemIsCentered="true"
-            app:tv_verticalSpacingWithMargins="@dimen/vs_5" />
-    </LinearLayout>
+    <TextView android:layout_width="match_parent" android:layout_height="32mm"
+        android:layout_marginTop="12mm" android:text="方向键选择    ·    确认键输入 / 打开    ·    返回键返回"
+        android:gravity="center_vertical" android:textSize="19mm" android:textColor="@color/tv_text_secondary"/>
 </LinearLayout>

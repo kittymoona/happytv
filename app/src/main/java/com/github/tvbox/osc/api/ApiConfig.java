@@ -258,6 +258,14 @@ public class ApiConfig {
         });
     }
 
+    public boolean hasRecentConfigCache() {
+        String apiUrl = Hawk.get(HawkConfig.API_URL, "");
+        if (apiUrl.isEmpty()) return false;
+        File cache = new File(App.getInstance().getFilesDir(), MD5.encode(apiUrl));
+        long age = System.currentTimeMillis() - cache.lastModified();
+        return cache.isFile() && age >= 0 && age < 6L * 60 * 60 * 1000;
+    }
+
     public void loadLiveConfig(boolean useCache, LoadConfigCallback callback) {
         String apiUrl = Hawk.get(HawkConfig.LIVE_API_URL, "");
         if (apiUrl.isEmpty()) {
@@ -349,8 +357,23 @@ public class ApiConfig {
 
     private static final int LOAD_JAR_MAX_RETRY = 1;
 
+    private volatile java.util.concurrent.CountDownLatch startupJarReady =
+            new java.util.concurrent.CountDownLatch(0);
+
     public void loadJar(boolean useCache, String spider, LoadConfigCallback callback) {
-        loadJar(useCache, spider, callback, 0);
+        loadJar(useCache, spider, callback, false);
+    }
+
+    public void loadJar(boolean useCache, String spider, LoadConfigCallback callback, boolean afterHome) {
+        java.util.concurrent.CountDownLatch ready = new java.util.concurrent.CountDownLatch(1);
+        startupJarReady = ready;
+        LoadConfigCallback completion = new LoadConfigCallback() {
+            @Override public void success() { ready.countDown(); callback.success(); }
+            @Override public void error(String message) { ready.countDown(); callback.error(message); }
+            @Override public void notice(String message) { callback.notice(message); }
+        };
+        if (afterHome) mainHandler.postDelayed(() -> loadJar(useCache, spider, completion, 0), 750);
+        else loadJar(useCache, spider, completion, 0);
     }
 
     private interface JarLoadCallback {
@@ -375,22 +398,32 @@ public class ApiConfig {
                 String error = "";
                 okhttp3.Response response = null;
                 try {
-                    okhttp3.Request request = new okhttp3.Request.Builder()
-                            .url(requestUrl)
-                            .build();
-                    okhttp3.OkHttpClient client = OkGoHelper.getDefaultClient();
-                    if (client == null) client = com.github.catvod.net.OkHttp.client();
-                    response = client.newCall(request).execute();
-                    if (!response.isSuccessful()) {
-                        error = "HTTP " + response.code();
-                    } else if (response.body() == null) {
-                        error = "empty body";
-                    } else {
-                        result = FindResult(response.body().string(), configKey);
-                        if (apiUrl.startsWith("clan")) {
-                            result = clanContentFix(clanToAddress(apiUrl), result);
+                    if ("asset://public_config.json".equals(apiUrl)) {
+                        try (InputStream input = App.getInstance().getAssets().open("public_config.json");
+                             BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
+                            StringBuilder content = new StringBuilder();
+                            String line;
+                            while ((line = reader.readLine()) != null) content.append(line);
+                            result = content.toString();
                         }
-                        result = fixContentPath(apiUrl, result);
+                    } else {
+                        okhttp3.Request request = new okhttp3.Request.Builder()
+                                .url(requestUrl)
+                                .build();
+                        okhttp3.OkHttpClient client = OkGoHelper.getDefaultClient();
+                        if (client == null) client = com.github.catvod.net.OkHttp.client();
+                        response = client.newCall(request).execute();
+                        if (!response.isSuccessful()) {
+                            error = "HTTP " + response.code();
+                        } else if (response.body() == null) {
+                            error = "empty body";
+                        } else {
+                            result = FindResult(response.body().string(), configKey);
+                            if (apiUrl.startsWith("clan")) {
+                                result = clanContentFix(clanToAddress(apiUrl), result);
+                            }
+                            result = fixContentPath(apiUrl, result);
+                        }
                     }
                 } catch (Throwable th) {
                     error = th.getMessage();
@@ -532,7 +565,7 @@ public class ApiConfig {
         File cache = new File(App.getInstance().getFilesDir().getAbsolutePath() + "/csp/"+MD5.string2MD5(jarUrl)+".jar");
 
         if (!md5.isEmpty() || useCache) {
-            if (cache.exists() && (useCache || MD5.getFileMd5(cache).equalsIgnoreCase(md5))) {
+            if (cache.exists() && (md5.isEmpty() ? useCache : MD5.getFileMd5(cache).equalsIgnoreCase(md5))) {
                 if (cache.exists()) {
                     loadJarAsync(cache, new JarLoadCallback() {
                         @Override
@@ -1454,6 +1487,9 @@ public class ApiConfig {
     }
 
     public Spider getCSP(SourceBean sourceBean) {
+        if ("builtin:public-media".equals(sourceBean.getApi())) {
+            return new PublicMediaSpider();
+        }
         if (sourceBean.getApi().endsWith(".js") || sourceBean.getApi().contains(".js?")){
             currentPyKey = "";
             return jsLoader.getSpider(sourceBean.getKey(), sourceBean.getApi(), sourceBean.getExt(), sourceBean.getJar());
@@ -1464,6 +1500,18 @@ public class ApiConfig {
             return pyLoader.getSpider(sourceBean.getKey(), sourceBean.getApi(), sourceBean.getExt());
         }
         else {
+            java.util.concurrent.CountDownLatch ready = startupJarReady;
+            if (ready.getCount() > 0) {
+                if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper())
+                    throw new IllegalStateException("片源初始化中，请在后台请求");
+                try {
+                    if (!ready.await(30, java.util.concurrent.TimeUnit.SECONDS))
+                        throw new IllegalStateException("片源初始化超时");
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("片源请求已取消", interrupted);
+                }
+            }
             currentPyKey = "";
             return jarLoader.getSpider(sourceBean.getKey(), sourceBean.getApi(), sourceBean.getExt(), sourceBean.getJar());
         }

@@ -166,6 +166,28 @@ public class ImgUtil {
         load(url, view, 10);
     }
 
+    /** Decode homepage artwork for its measured screen size, without a thumbnail override. */
+    public static void loadHomeArtwork(String url, ImageView view, String label) {
+        view.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        Drawable fallback = createTextDrawable(TextUtils.isEmpty(label) ? "悦看" : label);
+        if (isInvalidImageUrl(url)) {
+            view.setImageDrawable(fallback);
+            return;
+        }
+        Glide.with(view)
+                .asBitmap()
+                .load(getUrl(url))
+                .placeholder(com.github.tvbox.osc.R.color.tv_surface)
+                .error(fallback)
+                .format(DecodeFormat.PREFER_ARGB_8888)
+                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                .dontAnimate()
+                .centerCrop()
+                .listener(getListener(view, ImageView.ScaleType.CENTER_CROP, fallback))
+                .into(view);
+    }
+
+
     public static void loadVideoScreenshot(String uri, ImageView imageView, long frameTimeMicros) {
         RequestOptions requestOptions = RequestOptions.frameOf(frameTimeMicros * 1000)
                 .transform(new CenterCrop(), new RoundedCorners(10));
@@ -193,16 +215,18 @@ public class ImgUtil {
         String key = text + "_" + width + "x" + height + "_" + (int) cornerRadius;
         text = text.substring(0, 1);
         if (drawableCache.containsKey(key)) return drawableCache.get(key);
-        int randomColor = getRandomColor();
+        int backgroundColor = App.getInstance().getResources()
+                .getColor(com.github.tvbox.osc.R.color.tv_surface);
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(randomColor);
+        paint.setColor(backgroundColor);
         paint.setStyle(Paint.Style.FILL);
         RectF rectF = new RectF(0, 0, width, height);
         canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint);
-        paint.setColor(Color.WHITE);
-        paint.setTextSize(60);
+        paint.setColor(App.getInstance().getResources()
+                .getColor(com.github.tvbox.osc.R.color.tv_text_secondary));
+        paint.setTextSize(Math.min(width, height) * 0.28f);
         paint.setTextAlign(Paint.Align.CENTER);
         Paint.FontMetrics fontMetrics = paint.getFontMetrics();
         float x = width / 2f;

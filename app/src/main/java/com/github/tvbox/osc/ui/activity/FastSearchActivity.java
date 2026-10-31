@@ -271,11 +271,11 @@ public class FastSearchActivity extends BaseActivity {
                 if (folderFilterMode) {
                     mGridView.setVisibility(View.GONE);
                     mGridViewFilter.setVisibility(View.VISIBLE);
-                    searchAdapterFilter.setNewData(data.movie.videoList);
+                    searchAdapterFilter.setNewData(SearchHelper.filterSearchResults(data.movie.videoList));
                 } else {
                     mGridViewFilter.setVisibility(View.GONE);
                     mGridView.setVisibility(View.VISIBLE);
-                    searchAdapter.setNewData(data.movie.videoList);
+                    searchAdapter.setNewData(SearchHelper.filterSearchResults(data.movie.videoList));
                 }
             }
         });
@@ -630,7 +630,7 @@ public class FastSearchActivity extends BaseActivity {
 
         setWordListData(hots);
         for (SourceBean bean : searchRequestList) {
-            if (!bean.isSearchable()) {
+            if (!bean.isSearchable() || !SearchHelper.isSearchSourceAllowed(bean)) {
                 continue;
             }
             if (mCheckSources != null && !mCheckSources.containsKey(bean.getKey())) {
@@ -739,6 +739,7 @@ public class FastSearchActivity extends BaseActivity {
 
         if (absXml != null && absXml.movie != null && absXml.movie.videoList != null && absXml.movie.videoList.size() > 0) {
             for (Movie.Video video : absXml.movie.videoList) {
+                if (!SearchHelper.isSearchResultAllowed(video)) continue;
                 if (!matchSearchResult(video.name, searchTitle)) continue;
                 detailFallbackSearchResults.add(video);
                 if (!resultVods.containsKey(video.sourceKey)) {

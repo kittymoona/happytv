@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tv_history">历史</string>
+    <string name="tv_live">直播</string>
+    <string name="tv_search">搜索</string>
+    <string name="tv_push">推送</string>
+    <string name="tv_favorites">收藏</string>
+    <string name="tv_settings">设置</string>
+    <string name="tv_recommended">为你推荐</string>
+    <string name="tv_continue_watching">继续观看</string>
+</resources>
