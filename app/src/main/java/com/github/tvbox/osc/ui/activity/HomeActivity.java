@@ -158,6 +158,24 @@ public class HomeActivity extends BaseActivity {
     private long startupStarted;
     private boolean startupReported;
 
+    @Override protected void showLoading() {
+        super.showLoading();
+        View overlay = findViewById(R.id.startupLoading);
+        if (overlay != null) overlay.setVisibility(View.VISIBLE);
+    }
+
+    @Override protected void showSuccess() {
+        super.showSuccess();
+        View overlay = findViewById(R.id.startupLoading);
+        if (overlay != null) overlay.setVisibility(View.GONE);
+    }
+
+    @Override protected void showEmpty() {
+        super.showEmpty();
+        View overlay = findViewById(R.id.startupLoading);
+        if (overlay != null) overlay.setVisibility(View.GONE);
+    }
+
     @Override
     protected void init() {
         startupStarted = android.os.SystemClock.elapsedRealtime();

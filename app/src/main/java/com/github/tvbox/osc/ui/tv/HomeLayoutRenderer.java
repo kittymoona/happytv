@@ -205,24 +205,39 @@ public final class HomeLayoutRenderer {
         LinearLayout card = column();
         card.setPadding(mm(16),mm(6),mm(16),mm(6));
         actionable(card,"category:"+name,() -> actions.category(name));
+        int color = "movie".equals(name) ? Color.rgb(32, 82, 224)
+                : "series".equals(name) ? Color.rgb(142, 44, 211)
+                : "variety".equals(name) ? Color.rgb(0, 140, 119)
+                : Color.rgb(224, 96, 16);
+        android.graphics.drawable.StateListDrawable background = new android.graphics.drawable.StateListDrawable();
+        for (boolean focused : new boolean[]{true, false}) {
+            GradientDrawable shape = new GradientDrawable();
+            shape.setColor(color);
+            shape.setCornerRadius(mm(12));
+            if (focused) shape.setStroke(mm(2), WHITE);
+            background.addState(focused ? new int[]{android.R.attr.state_focused} : new int[]{}, shape);
+        }
+        card.setBackground(background);
         LinearLayout top = row();
         top.setGravity(Gravity.CENTER_VERTICAL);
         TextView heading = label(("live".equals(name) && large ? "看" : "")+title,
                 large ? 30 : 28, WHITE);
-        top.addView(heading,new LinearLayout.LayoutParams(0,-1,1f));
+        LinearLayout captions = column();
+        captions.addView(heading,new LinearLayout.LayoutParams(-1,0,1f));
+        top.addView(captions,new LinearLayout.LayoutParams(0,-1,1f));
         ImageView icon = new ImageView(context);
         icon.setImageResource("movie".equals(name) ? R.drawable.tv_icon_movie
                 : "series".equals(name) ? R.drawable.tv_icon_series
                 : "variety".equals(name) ? R.drawable.tv_icon_variety
                 : "kids".equals(name) ? R.drawable.tv_icon_kids : R.drawable.icon_live);
-        icon.setColorFilter(SECONDARY);
-        top.addView(icon,new LinearLayout.LayoutParams(mm(large ? 36 : 40),mm(large ? 36 : 40)));
-        card.addView(top,new LinearLayout.LayoutParams(-1,large ? mm(36) : -1));
+        icon.setColorFilter(WHITE);
+        top.addView(icon,new LinearLayout.LayoutParams(mm(large ? 52 : 48),mm(large ? 52 : 48)));
+        card.addView(top,new LinearLayout.LayoutParams(-1,-1));
         if (large) {
             TextView subtitle = label("live".equals(name) ? "进入直播"
-                    : actions.available(name) ? "进入分类" : "需切换源",22,SECONDARY);
+                    : actions.available(name) ? "进入分类" : "需切换源",17,SECONDARY);
             subtitle.setGravity(Gravity.CENTER_VERTICAL);
-            card.addView(subtitle,new LinearLayout.LayoutParams(-1,0,1f));
+            captions.addView(subtitle,new LinearLayout.LayoutParams(-1,mm(23)));
         }
         card.setContentDescription(title + (actions.available(name) ? "" : "，当前源没有此分类"));
         if (!actions.available(name)) card.setAlpha(0.55f);

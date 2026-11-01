@@ -19,6 +19,9 @@
         <!--        <item name="android:windowBackground">@drawable/main_bg</item>-->
         <item name="android:windowBackground">@drawable/tv_background</item>
     </style>
+    <style name="AppTheme.Startup" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@drawable/startup_window</item>
+    </style>
     <!-- 自定义dialog样式 -->
     <style name="CustomDialogStyle" parent="@android:style/Theme.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>

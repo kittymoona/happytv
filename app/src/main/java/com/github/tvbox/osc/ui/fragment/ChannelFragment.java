@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.lifecycle.Observer;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseLazyFragment;
@@ -48,8 +49,8 @@ public final class ChannelFragment extends BaseLazyFragment {
     private boolean loading;
     private boolean ended;
     private boolean pendingMenuFocus;
-    private LinearLayout content, menu, filterRows, hero;
-    private TextView status;
+    private LinearLayout content, menu, filterRows, hero, pageHeader;
+    private TextView status, filterSummary;
     private TvRecyclerView grid;
     private GridAdapter adapter;
     private final List<Movie.Video> videos = new ArrayList<>();
@@ -142,6 +143,23 @@ public final class ChannelFragment extends BaseLazyFragment {
         adapter = new GridAdapter(false, new ImgUtil.Style(0.75f, "rect"));
         grid.setAdapter(adapter);
         content.addView(grid, new LinearLayout.LayoutParams(-1, 0, 1f));
+        filterSummary = label("", 18);
+        filterSummary.setGravity(Gravity.CENTER);
+        filterSummary.setPadding(mm(20), 0, mm(20), 0);
+        filterSummary.setBackgroundResource(R.drawable.channel_filter_summary);
+        filterSummary.setVisibility(View.GONE);
+        FrameLayout.LayoutParams summaryParams =
+                new FrameLayout.LayoutParams(-2, mm(32), Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        summaryParams.topMargin = mm(8);
+        summaryParams.leftMargin = summaryParams.rightMargin = mm(64);
+        host.addView(filterSummary, summaryParams);
+        grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                updateSummaryVisibility();
+            }
+        });
+        grid.addOnLayoutChangeListener((v, l, t, r, b, oldL, oldT, oldR, oldB) ->
+                updateSummaryVisibility());
         adapter.setLoadMoreView(new LoadMoreView());
         adapter.setOnLoadMoreListener(() -> {
             if (!loading && !ended) load(false);
@@ -178,19 +196,49 @@ public final class ChannelFragment extends BaseLazyFragment {
         detach(menu);
         detach(hero);
         detach(status);
+        detach(filterRows);
         adapter.removeAllHeaderView();
         hero.setVisibility(mode == 0 ? View.VISIBLE : View.GONE);
         content.setBackgroundColor(Color.TRANSPARENT);
+        pageHeader = column();
         if (mode == 0) {
-            LinearLayout header = column();
-            header.addView(hero, new LinearLayout.LayoutParams(-1, mm(175)));
-            header.addView(menu, new LinearLayout.LayoutParams(-1, mm(56)));
-            header.addView(status, new LinearLayout.LayoutParams(-1, mm(40)));
-            adapter.addHeaderView(header);
+            pageHeader.addView(hero, new LinearLayout.LayoutParams(-1, mm(175)));
+            pageHeader.addView(menu, new LinearLayout.LayoutParams(-1, mm(56)));
         } else {
-            content.addView(menu, 0, new LinearLayout.LayoutParams(-1, mm(52)));
-            content.addView(status, content.indexOfChild(grid), new LinearLayout.LayoutParams(-1, mm(34)));
+            pageHeader.addView(menu, new LinearLayout.LayoutParams(-1, mm(52)));
         }
+        LinearLayout.LayoutParams filterParams = new LinearLayout.LayoutParams(-1, -2);
+        filterParams.setMargins(0, mm(6), 0, mm(12));
+        pageHeader.addView(filterRows, filterParams);
+        pageHeader.addView(status, new LinearLayout.LayoutParams(-1, mm(34)));
+        adapter.addHeaderView(pageHeader);
+        updateFilterSummary();
+        filterSummary.setVisibility(View.GONE);
+    }
+
+    private void updateFilterSummary() {
+        StringBuilder summary = new StringBuilder(group.title);
+        if (category != null) for (MovieSort.SortFilter filter : category.filters) {
+            if (filter.values == null || filter.values.isEmpty()) continue;
+            String active = category.filterSelect.get(filter.key);
+            if (active == null) active = filter.values.values().iterator().next();
+            for (Map.Entry<String, String> entry : filter.values.entrySet()) {
+                if (entry.getValue().equals(active)) {
+                    summary.append("  ·  ").append(filter.name).append("：").append(entry.getKey());
+                    break;
+                }
+            }
+        }
+        filterSummary.setText(summary.toString());
+    }
+
+    private void updateSummaryVisibility() {
+        if (filterSummary == null || pageHeader == null) return;
+        // The summary appears only after the full options have left the viewport.
+        View header = grid.getLayoutManager().findViewByPosition(0);
+        boolean scrolled = header == null || header.getBottom() <= grid.getPaddingTop();
+        filterSummary.setVisibility(mode != 0 && folders.empty()
+                && filterRows.getVisibility() == View.VISIBLE && scrolled ? View.VISIBLE : View.GONE);
     }
 
     private void renderMenu() {
@@ -263,6 +311,7 @@ public final class ChannelFragment extends BaseLazyFragment {
                         boolean selected = value.equals(child.getTag());
                         child.setSelected(selected);
                     }
+                    updateFilterSummary();
                     load(true);
                 });
                 option.setTag(value);
@@ -290,6 +339,7 @@ public final class ChannelFragment extends BaseLazyFragment {
             adapter.setNewData(new ArrayList<>());
             hero.removeAllViews();
             grid.scrollToPosition(0);
+            filterSummary.setVisibility(View.GONE);
         }
         if (category == null) {
             status.setVisibility(View.VISIBLE);
@@ -313,7 +363,7 @@ public final class ChannelFragment extends BaseLazyFragment {
                     || !source.equals(ApiConfig.get().getHomeSourceBean().getKey())) return;
             detachRequests();
             loading = false;
-            View focusedMenu = menu.findFocus();
+            View focusedHeader = pageHeader.findFocus();
             if (result == null || result.movie == null || result.movie.videoList == null
                     || result.movie.videoList.isEmpty()) {
                 ended = true;
@@ -333,7 +383,7 @@ public final class ChannelFragment extends BaseLazyFragment {
             status.setText(mode == 0 ? "重磅热播" : "");
             status.setVisibility(mode == 0 ? View.VISIBLE : View.GONE);
             if (mode == 0 && page == 1) renderHero();
-            if (focusedMenu != null) grid.post(focusedMenu::requestFocus);
+            if (focusedHeader != null) grid.post(focusedHeader::requestFocus);
             android.util.Log.i("YueKanChannel", group.title + " mode=" + mode
                     + " category=" + snapshot.id + " page=" + page
                     + " filters=" + snapshot.filterSelect + " count=" + result.movie.videoList.size());
@@ -375,6 +425,7 @@ public final class ChannelFragment extends BaseLazyFragment {
             folders.push(HomeChannels.copy(category));
             category = new MovieSort.SortData(video.id, video.name);
             filterRows.setVisibility(View.GONE);
+            filterSummary.setVisibility(View.GONE);
             hero.setVisibility(View.GONE);
             load(true);
             return;
@@ -392,6 +443,7 @@ public final class ChannelFragment extends BaseLazyFragment {
         if (!folders.empty()) {
             category = folders.pop();
             renderFilters();
+            updateFilterSummary();
             hero.setVisibility(mode == 0 && folders.empty() ? View.VISIBLE : View.GONE);
             load(true);
             return true;
@@ -407,10 +459,8 @@ public final class ChannelFragment extends BaseLazyFragment {
     public void focusMenu() {
         pendingMenuFocus = true;
         if (menu == null || menu.getChildCount() < 2) return;
-        if (mode == 0) {
-            // The shortcuts belong to the scrollable header. Bring it back before entry.
-            grid.scrollToPosition(0);
-        }
+        // The shortcuts and filter options share the scrollable header.
+        grid.scrollToPosition(0);
         grid.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
         // Wait for a detached header to be attached after scrolling back to the top.
         grid.post(this::applyPendingMenuFocus);

@@ -36,6 +36,7 @@
         <activity
             android:name=".ui.activity.HomeActivity"
             android:exported="true"
+            android:theme="@style/AppTheme.Startup"
             android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
